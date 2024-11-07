@@ -1,0 +1,65 @@
+import telebot
+from telebot import types
+from sumy.parsers.plaintext import PlaintextParser
+from sumy.nlp.tokenizers import Tokenizer
+from sumy.summarizers.luhn import LuhnSummarizer
+
+API_TOKEN = '7706127470:AAFiVCCDqczdxy_BB3F6rNljtsp0gZeB724'
+
+bot = telebot.TeleBot(API_TOKEN)
+
+
+def sn(text):
+    parsers = PlaintextParser.from_string(text, Tokenizer("english"))
+    summarr = LuhnSummarizer()
+    summar = summarr(parsers.document, 3)  
+    return "\n".join(str(see) for see in summar)
+
+
+def wn(text):
+    parsers = PlaintextParser.from_string(text, Tokenizer("english"))
+    summarr = LuhnSummarizer()
+    summar = summarr(parsers.document, 10) 
+    return "\n".join(str(see) for see in summar)
+
+
+@bot.message_handler(commands=['start'])
+def sd(message):
+    bot.send_message(
+        message.chat.id,
+        f"Привет, {message.from_user.first_name} {message.from_user.last_name}!"
+    )
+    bot.reply_to(message, "Чтобы узнать что я могу, введи /help")
+
+
+@bot.message_handler(commands=['help'])
+def help_command(message):
+    bot.send_message(
+        message.chat.id,
+        "Я - бот, который умеет сжимать тексты. Доступны два типа сжатия:\n"
+        "- Сильное сжатие (одно-два предложения): введите текст и выберите '/sil'\n"
+        "- Слабое сжатие (краткий абзац): введите текст и выберите '/slab'"
+    )
+
+
+@bot.message_handler(commands=['sil', 'slab'])
+def wd(message):
+    if message.text == "/sil":
+        bot.send_message(message.chat.id, "Tекст для сильного сжатия.")
+    elif message.text == "/slab":
+        bot.send_message(message.chat.id, "Tекст для слабого сжатия.")
+
+
+# Обработка обычного текста пользователя
+@bot.message_handler(func=lambda m: True)
+def handle_text(message):
+    if message.text.startswith("/sil"):
+        result = sil_text_summarization(message.text)
+        bot.send_message(message.chat.id, "Ваше сильно сжатое сообщение:\n" + result)
+    elif message.text.startswith("/slab"):
+        result = slab_text_summarization(message.text)
+        bot.send_message(message.chat.id, "Ваше слабо сжатое сообщение:\n" + result)
+
+
+if name == "main":
+    bot.polling(none_stop=True)
